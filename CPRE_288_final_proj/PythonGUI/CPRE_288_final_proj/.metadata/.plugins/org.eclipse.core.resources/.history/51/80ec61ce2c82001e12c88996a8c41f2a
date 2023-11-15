@@ -1,0 +1,14 @@
+#include "lcd.h"
+#include "cyBot_uart.h"
+#include "cyBot_Scan.h"
+#include "Timer.h"
+#include <math.h>
+
+int main(void)
+{
+    timer_init();
+    lcd_init();
+
+    lcd_puts("hello");
+	return 0;
+}

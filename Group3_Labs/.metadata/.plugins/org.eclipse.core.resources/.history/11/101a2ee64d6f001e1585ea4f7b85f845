@@ -1,0 +1,114 @@
+/**
+ * lab6_main.c
+
+ */
+#include <adc.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <Math.h>
+#include "timer.h"
+#include "lcd.h"
+#include "cyBot_Scan.h"
+#include <inc/tm4c123gh6pm.h>
+
+struct object
+{
+    int objNum;
+    int startAngle;
+    int dist;
+    int width;
+    int endAngle;
+};
+
+int data, dist;
+int dataArr[91];
+struct object objArr[5];
+int smallWidth[3] = { 1000000, 25000000, 100000 };
+
+
+void ADCscan()
+{
+    cyBOT_Scan_t scan;
+    int i;
+    for (i = 0; i <= 180; i += 2)
+    {
+        data = adc_read();
+        dist = 98223 * (pow(data, -1.152));
+        dataArr[i / 2] = dist;
+        cyBOT_Scan(i, &scan);
+    }
+    i = 1;
+    int count = 0;
+    int obj = 0;
+    while (i <= 91)
+    {
+        if (dataArr[i] - 4 < dataArr[i - 1]
+                && dataArr[i - 1] < dataArr[i] + 4 && dataArr[i - 1] < 100)
+        {
+            count++;
+        }
+        else
+        {
+            count = 0;
+        }
+
+        if (count > 3)
+        {
+            obj++;
+            objArr[obj - 1].objNum = obj;   //object number
+            objArr[obj - 1].startAngle = i * 2 - 8; //start angle
+            int dist = dataArr[i - 4] + dataArr[i - 3] + dataArr[i - 2]
+                    + dataArr[i - 1];
+            while (dataArr[i] - 4 < dataArr[i - 1]
+                    && dataArr[i - 1] < dataArr[i] + 4
+                    && dataArr[i - 1] < 100)
+            {
+                dist += dataArr[i];
+                count++;
+                i++;
+            }
+            objArr[obj - 1].dist = dist / count; //distance
+
+            objArr[obj - 1].width = i * 2 - ((i - count) * 2); //width
+            objArr[obj - 1].endAngle = i * 2; //end angle
+
+            if (objArr[obj - 1].width < smallWidth[0]) //check for smallest width
+            {
+                smallWidth[0] = objArr[obj - 1].width; //width
+                smallWidth[1] = objArr[obj - 1].startAngle; //angle
+                smallWidth[2] = objArr[obj - 1].dist; //distance
+            }
+            count = 0;
+            i--;
+        }
+        i++;
+        cyBOT_Scan(smallWidth[1], &scan);
+    }
+}
+
+
+int main(void)
+{
+    //Question 1: we will use GPIO reg B because it contains the pin associated with AIN10
+    ///Question 2: we will configure AIN10 (pin 4 of port B) to be analog
+    //Question 3: We will use the hardware approach to do sampling average and set ADCSAC to 0x1
+    //Question 4: You should enable any interrupts that you want to trigger an interrupt in the ADC_IM register
+    //and set bit 14 in the NVIC_EN0_R because that is what corresponds to ADC0 SS0 (pg104 DS)
+    adc_init();
+    lcd_init();
+    lcd_clear();
+
+
+    ADCscan();
+
+
+
+//PART 2
+//    data = adc_read();
+//    dist = 98223 * (pow(data, -1.152));
+//    snprintf(dataArr, 100, "The sensor read %d The item is %d cm away", data,
+//             dist);
+//    lcd_puts(dataArr);
+
+    return 0;
+}

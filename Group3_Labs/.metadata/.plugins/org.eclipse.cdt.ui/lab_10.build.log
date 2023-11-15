@@ -1,0 +1,29 @@
+
+**** Build of configuration Debug for project lab_10 ****
+
+"C:\\ti\\ccs1230\\ccs\\utils\\bin\\gmake" -k -j 20 all -O 
+ 
+Building file: "../lab10_main.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="U:/CPRE288_F2023/lab_10" --include_path="C:/ti/TivaWare_C_Series-2.2.0.295" --include_path="C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="lab10_main.d_raw"  "../lab10_main.c"
+ 
+>> Compilation failure
+subdir_rules.mk:9: recipe for target 'lab10_main.obj' failed
+"..\servo.h", line 20: error #131: expected a "{"
+"../lab10_main.c", line 15: warning #12-D: parsing restarts here after previous syntax error
+"../lab10_main.c", line 41: warning #121-D: return value type does not match the function type
+1 error detected in the compilation of "../lab10_main.c".
+gmake: *** [lab10_main.obj] Error 1
+Building file: "../servo.c"
+Invoking: Arm Compiler
+"C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="U:/CPRE288_F2023/lab_10" --include_path="C:/ti/TivaWare_C_Series-2.2.0.295" --include_path="C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include" --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi --preproc_with_compile --preproc_dependency="servo.d_raw"  "../servo.c"
+ 
+>> Compilation failure
+subdir_rules.mk:9: recipe for target 'servo.obj' failed
+"..\servo.h", line 20: error #131: expected a "{"
+"../servo.c", line 9: warning #12-D: parsing restarts here after previous syntax error
+1 error detected in the compilation of "../servo.c".
+gmake: *** [servo.obj] Error 1
+gmake: Target 'all' not remade because of errors.
+
+**** Build Finished ****

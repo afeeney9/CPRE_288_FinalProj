@@ -1,0 +1,240 @@
+/**
+ * lab10_main.c
+
+ */
+#include <stdint.h>
+#include <stdbool.h>
+#include <Math.h>
+#include "timer.h"
+#include "lcd.h"
+#include "button.h"
+#include "ping.h"
+#include "uart.h"
+#include "servo.h"
+#include <inc/tm4c123gh6pm.h>
+
+uint8_t command = 0;
+float degrees = 90;
+int matchVal;
+char buffer[100];
+struct object objArr[5];
+int smallWidth[3] = { 1000000, 25000000, 100000 };
+
+//servo calibration for cybot00
+int zeroMatch = 311467;
+int oneEightyMatch = 284356;
+
+struct object
+{
+    int objNum;
+    int startAngle;
+    int dist;
+    int width;
+    int endAngle;
+};
+
+volatile enum
+{
+    LOW, HIGH, DONE
+} state;
+volatile unsigned int rising_time;
+volatile unsigned int falling_time;
+int pulse_time;
+
+void printString(char *arr)
+{
+    int i = 0;
+    while (arr[i])
+    {
+        uart_sendChar(arr[i]);
+        i++;
+    }
+    uart_sendChar('\n');
+    uart_sendChar('\r');
+}
+
+char dir = 0;
+void print()
+{
+    lcd_clear();
+    if (dir)
+    {
+        snprintf(buffer, 100, "position counter: %d \n lower degree", matchVal);
+    }
+    else
+    {
+        snprintf(buffer, 100, "position counter: %d \n higher degree",
+                 matchVal);
+    }
+    lcd_puts(buffer);
+}
+
+void part2()
+{
+    matchVal = servo_calibrate(90);
+    command = button_getButton();
+    if (command == 0x8)
+    {
+        matchVal = servo_calibrate(0);
+        print();
+    }
+    else if (command == 0x4)
+    {
+        dir = dir ^ 0x1;
+        print();
+    }
+    else if (command == 0x2)
+    {
+        if (!dir)
+        {
+            degrees += 5;
+            matchVal = servo_calibrate(degrees);
+        }
+        else
+        {
+            degrees -= 5;
+            matchVal = servo_calibrate(degrees);
+        }
+        print();
+    }
+    else if (command == 0x1)
+    {
+        if (!dir)
+        {
+            degrees++;
+            matchVal = servo_calibrate(degrees);
+        }
+        else
+        {
+            degrees--;
+            matchVal = servo_calibrate(degrees);
+        }
+        print();
+    }
+}
+
+void part3()
+{
+    matchVal = zeroMatch;
+    int decrement = ((zeroMatch - oneEightyMatch) / 180) * 2;
+    char i = 0;
+    int dataArr[91];
+    int obj = 0;
+
+    while (matchVal > oneEightyMatch)
+    {
+        servo_move(matchVal);
+        timer_waitMillis(500);
+        matchVal -= decrement;
+        pulse_time = ping_read();
+        pulse_time = (abs(pulse_time) / (2 * 16)) * 0.034;
+        dataArr[i] = pulse_time;
+        i++;
+
+    }
+    i = 1;
+    int count = 0;
+    while (i <= 91)
+    {
+        if (dataArr[i] - 4 < dataArr[i - 1] && dataArr[i - 1] < dataArr[i] + 4
+                && dataArr[i - 1] < 100)
+        {
+            count++;
+        }
+        else
+        {
+            count = 0;
+        }
+
+        if (count > 3)
+        {
+            obj++;
+            objArr[obj - 1].objNum = obj;   //object number
+            objArr[obj - 1].startAngle = i * 2 - 8; //start angle
+            int dist = dataArr[i - 4] + dataArr[i - 3] + dataArr[i - 2]
+                    + dataArr[i - 1];
+            while (dataArr[i] - 4 < dataArr[i - 1]
+                    && dataArr[i - 1] < dataArr[i] + 4 && dataArr[i - 1] < 100)
+            {
+                dist += dataArr[i];
+                count++;
+                i++;
+            }
+            objArr[obj - 1].dist = dist / count; //distance
+
+            objArr[obj - 1].width = i * 2 - ((i - count) * 2); //width
+            objArr[obj - 1].endAngle = i * 2; //end angle
+
+            if (objArr[obj - 1].width < smallWidth[0]) //check for smallest width
+            {
+                smallWidth[0] = objArr[obj - 1].width; //width
+                smallWidth[1] = objArr[obj - 1].startAngle; //angle
+                smallWidth[2] = objArr[obj - 1].dist; //distance
+            }
+            count = 0;
+            i--;
+        }
+        i++;
+    }
+    char head[] = "Angle(Degrees)    Distance(m)";
+    printString(head);
+    for (i = 0; i <= 90; i++)
+    {
+        snprintf(buffer, 100, "%d                %d", i * 2, dataArr[i]);
+        printString(buffer);
+    }
+
+    char head2[] = "Object#  Start angle      End angle      Distance     Width";
+    printString(head2);
+    for (i = 0; i < obj; i++)
+    {
+        snprintf(buffer, 100,
+                 "%d            %d            %d           %d               %d",
+                 objArr[i].objNum, objArr[i].startAngle, objArr[i].endAngle,
+                 objArr[i].dist, objArr[i].width);
+        printString(buffer);
+    }
+    snprintf(buffer, 100, "smallest angle location: %d and distance %d",
+             smallWidth[1], smallWidth[2]);
+    printString(buffer);
+    servo_move(zeroMatch-(smallWidth[1]*(decrement/2)));
+}
+
+int main(void)
+{
+//Question 1: The servo is controlled through pulse width modulation where position of the servo is dependent on duration of the pulse
+// to set postion to 0 degrees pulse high for 1 ms every 20ms for 90 degrees pulse high for 1.5 ms every 20ms for 180 degrees
+// pulse high for 2 ms every 20 ms
+
+///Question 2: Timer 1 regs relevant to this lab are: TIMER0_CTL_R, TIMER0_CFG_R, TIMER0_TAMR_R, TIMER0_TAPR_R, TIMER0_TAILR_R,
+//TIMER0_TAPMR_R, TIMER0_TAMATCHR_R, TIMER0_ICR_R, TIMER0_IMR_R
+
+//Question 3: There are 320,000 ticks in a 20ms duration for a 16MHz clk sys
+// (16*10^6 # cycles per second)*(20*10^-3 seconds)= 320,000 cycles or ticks
+
+//Question 4: In terms of this lab the PWM signal is used to control the serve the high pulse is used to determine the degree
+//which the servo should point to and the low pulse is used as a wait period between the high signals to distinguish when the
+//signal has stop. The pin is configured as an output when we are sending the wave form to the servo and can be cleared after
+//the pusle is sent
+
+    timer_init();
+    lcd_init();
+    lcd_clear();
+    servo_init();
+    button_init();
+    ping_init();
+    uart_init();
+    TIMER3B_Handler();
+
+    while (1)
+    {
+        char uart_char = uart_receive();
+        if (uart_char == 'm')
+            part3();
+        //part2();
+
+    }
+
+    return 0;
+}
+

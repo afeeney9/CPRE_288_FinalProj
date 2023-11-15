@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Scaning/zlab10_main.c&apos; to &apos;scan&amp;sendData.c&apos;" description="Rename resource &apos;zlab10_main.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="zlab10_main.c" name="scan&amp;sendData.c" stamp="1699556080390" updateReferences="true"/>
+</session>

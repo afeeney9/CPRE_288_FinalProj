@@ -1,0 +1,94 @@
+/**
+ * lab10_main.c
+
+ */
+#include <stdint.h>
+#include <stdbool.h>
+#include <Math.h>
+#include "timer.h"
+#include "lcd.h"
+#include "button.h"
+#include "servo.h"
+#include <inc/tm4c123gh6pm.h>
+
+extern volatile char direction;
+int degrees;
+
+int main(void)
+{
+//Question 1: The servo is controlled through pulse width modulation where position of the servo is dependent on duration of the pulse
+// to set postion to 0 degrees pulse high for 1 ms every 20ms for 90 degrees pulse high for 1.5 ms every 20ms for 180 degrees
+// pulse high for 2 ms every 20 ms
+
+///Question 2: Timer 1 regs relevant to this lab are: TIMER0_CTL_R, TIMER0_CFG_R, TIMER0_TAMR_R, TIMER0_TAPR_R, TIMER0_TAILR_R,
+//TIMER0_TAPMR_R, TIMER0_TAMATCHR_R, TIMER0_ICR_R, TIMER0_IMR_R
+
+//Question 3: There are 320,000 ticks in a 20ms duration for a 16MHz clk sys
+// (16*10^6 # cycles per second)*(20*10^-3 seconds)= 320,000 cycles or ticks
+
+//Question 4: In terms of this lab the PWM signal is used to control the serve the high pulse is used to determine the degree
+//which the servo should point to and the low pulse is used as a wait period between the high signals to distinguish when the
+//signal has stop. The pin is configured as an output when we are sending the wave form to the servo and can be cleared after
+//the pusle is sent
+
+    timer_init();
+    lcd_init();
+    lcd_clear();
+    servo_init();
+    button_init();
+    uint8_t command = 0;
+    float degrees = 90;
+    char dir = 0;
+    int matchVal;
+    matchVal = servo_move(90);
+    char buffer[100];
+
+    while (1)
+    {
+        command = button_getButton();
+        if (command == 0x8)
+        {
+            matchVal = servo_move(0);
+        }
+        else if (command == 0x4)
+        {
+            dir = dir ^ 0x1;
+        }
+        else if (command == 0x2)
+        {
+            if (!dir)
+            {
+                degrees += 5;
+                matchVal = servo_move(degrees);
+            }
+            else
+            {
+                degrees -= 5;
+                matchVal = servo_move(degrees);
+            }
+        }
+        else if (command == 0x1)
+        {
+            if (!dir)
+            {
+                degrees++;
+                matchVal = servo_move(degrees);
+            }
+            else
+            {
+                degrees--;
+                matchVal = servo_move(degrees);
+            }
+        }
+        lcd_clear();
+        if(dir){
+            snprintf(buffer, 100, "position counter: %d \n lower degree", matchVal);
+        }else{
+            snprintf(buffer, 100, "position counter: %d \n higher degree", matchVal);
+        }
+        lcd_puts(buffer);
+    }
+
+    return 0;
+}
+

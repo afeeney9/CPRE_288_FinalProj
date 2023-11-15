@@ -1,0 +1,69 @@
+/**
+ * lab6_main.c
+
+ */
+#include <adc.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <Math.h>
+#include "timer.h"
+#include "lcd.h"
+#include "ping.h"
+#include "cyBot_Scan.h"
+//#include <driverlib/interrupt.h>
+#include <inc/tm4c123gh6pm.h>
+
+volatile enum
+{
+    LOW, HIGH, DONE
+} state;
+volatile unsigned int rising_time;
+volatile unsigned int falling_time;
+char msg[50];
+int pulse_time;
+int overflow=0;
+
+void part2()
+{
+    pulse_time = abs(ping_read());
+    pulse_time = pulse_time / 16;
+    snprintf(msg, 50, "pulse time is %d microseconds", pulse_time);
+    lcd_clear();
+    lcd_puts(msg);
+    timer_waitMillis(1000);
+}
+
+void part3()
+{
+    pulse_time = ping_read();
+    if(pulse_time < 0) overflow++;
+    pulse_time = (abs(pulse_time) / (2*16)) * 0.034;
+    snprintf(msg, 50, "pulse distance is %d cm \n overflow %d", pulse_time, overflow);
+    lcd_clear();
+    lcd_puts(msg);
+    timer_waitMillis(500);
+}
+int main(void)
+{
+//Question 1: We will use the following regs for this lab: TIMER0_CTL_R,TIMER0_CFG_R,TIMER0_TAMR_R, TIME03_TAILR_R, TIMER0_TAPMR_R, TIMER0_TAMATCH_R,TIMER0_ICR_R, TIMER0_IMR_R
+///Question 2: We will use: ((delta * 10 ^ -6) * 34,000)/(2* clk frequency) to get the distance in cm
+//Question 3: The GPTM Raw interrupt status reg will show the status of interrupts that are triggered regardless of weather they are
+//enabled or not and the GPTM Masked Interrupt status reg will only show the interrupt if they have been triggered and they are enabled
+//The GPTMMIS reg is the register that is checked by the interrupt handler to determine the source of the interrupt triggered
+
+    timer_init();
+    lcd_init();
+    lcd_clear();
+    ping_init();
+    TIMER3B_Handler();
+
+
+    while (1)
+    {
+        //part2();
+        part3();
+    }
+
+    return 0;
+}
+

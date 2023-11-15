@@ -1,0 +1,44 @@
+/**
+ * lab6_main.c
+
+ */
+#include <adc.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <Math.h>
+#include "timer.h"
+#include "lcd.h"
+#include "ping.h"
+#include "cyBot_Scan.h"
+#include <inc/tm4c123gh6pm.h>
+
+
+int main(void)
+{
+//Question 1: The servo is controlled through pulse width modulation where position of the servo is dependent on duration of the pulse
+// to set postion to 0 degrees pulse high for .75 ms every 20ms for 90 degrees pulse high for 1.5 ms every 20ms for 180 degrees
+// pulse high for 2.25 ms every 20 ms
+
+///Question 2: Timer 1 regs relevant to this lab are: TIMER0_CTL_R, TIMER0_CFG_R, TIMER0_TAMR_R, TIMER0_TAPR_R, TIMER0_TAILR_R,
+//TIMER0_TAPMR_R, TIMER0_TAMATCHR_R, TIMER0_ICR_R, TIMER0_IMR_R
+
+//Question 3:
+
+//Question 4:
+
+    timer_init();
+    lcd_init();
+    lcd_clear();
+    ping_init();
+    TIMER3B_Handler();
+
+
+    while (1)
+    {
+        //part2();
+        part3();
+    }
+
+    return 0;
+}
+

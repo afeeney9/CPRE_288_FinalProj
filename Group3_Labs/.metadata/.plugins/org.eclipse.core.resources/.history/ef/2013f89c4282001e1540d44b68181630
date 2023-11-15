@@ -1,0 +1,21 @@
+/*
+ * movement.h
+ *
+ *  Created on: Sep 7, 2023
+ *      Author: afeeney9
+ */
+#include "open_interface.h"
+#include "cyBot_Scan.h"
+
+
+#ifndef MOVEMENT_H_
+#define MOVEMENT_H_
+
+void move_forward(int centimeters);
+void move_backward(int centimeters);
+void turn_clockwise(int degrees);
+void turn_ccw(int degrees);
+
+
+
+#endif /* MOVEMENT_H_ */

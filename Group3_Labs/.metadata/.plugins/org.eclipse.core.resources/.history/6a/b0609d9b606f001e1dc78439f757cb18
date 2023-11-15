@@ -1,0 +1,193 @@
+/**
+ * lab6_main.c
+
+ */
+#include <adc.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <Math.h>
+#include "timer.h"
+#include "lcd.h"
+#include "uart.h"
+#include "cyBot_Scan.h"
+#include <inc/tm4c123gh6pm.h>
+
+struct object
+{
+    int objNum;
+    int startAngle;
+    int dist;
+    int width;
+    int endAngle;
+};
+
+int data, dist;
+int dataArr[91];
+struct object objArr[5];
+int smallWidth[3] = { 1000000, 25000000, 100000 };
+char buffer[100];
+
+void printString(char *arr)
+{
+    int i = 0;
+    while (arr[i])
+    {
+        uart_sendChar(arr[i]);
+        i++;
+    }
+    uart_sendChar('\n');
+    uart_sendChar('\r');
+}
+
+void ADCscan()
+{
+    cyBOT_init_Scan(0b0001);
+    right_calibration_value = 290500;
+    left_calibration_value = 1235500;
+    cyBOT_Scan_t scan;
+    int i;
+    for (i = 0; i <= 180; i += 2)
+    {
+        data = adc_read();
+        dist = 98223 * (pow(data, -1.152));
+        dataArr[i / 2] = dist;
+        cyBOT_Scan(i, &scan);
+    }
+    i = 1;
+    int count = 0;
+    int obj = 0;
+    while (i <= 91)
+    {
+        if (dataArr[i] - 4 < dataArr[i - 1] && dataArr[i - 1] < dataArr[i] + 4
+                && dataArr[i - 1] < 100)
+        {
+            count++;
+        }
+        else
+        {
+            count = 0;
+        }
+
+        if (count > 3)
+        {
+            obj++;
+            objArr[obj - 1].objNum = obj;   //object number
+            objArr[obj - 1].startAngle = i * 2 - 8; //start angle
+            int dist = dataArr[i - 4] + dataArr[i - 3] + dataArr[i - 2]
+                    + dataArr[i - 1];
+            while (dataArr[i] - 4 < dataArr[i - 1]
+                    && dataArr[i - 1] < dataArr[i] + 4 && dataArr[i - 1] < 100)
+            {
+                dist += dataArr[i];
+                count++;
+                i++;
+            }
+            objArr[obj - 1].dist = dist / count; //distance
+
+            objArr[obj - 1].width = i * 2 - ((i - count) * 2); //width
+            objArr[obj - 1].endAngle = i * 2; //end angle
+
+            if (objArr[obj - 1].width < smallWidth[0]) //check for smallest width
+            {
+                smallWidth[0] = objArr[obj - 1].width; //width
+                smallWidth[1] = objArr[obj - 1].startAngle; //angle
+                smallWidth[2] = objArr[obj - 1].dist; //distance
+            }
+            count = 0;
+            i--;
+        }
+        i++;
+    }
+    char head[] = "Angle(Degrees)    Distance(m)";
+    printString(head);
+    for (i = 0; i <= 90; i++)
+    {
+        snprintf(buffer, 100, "%d                %d", i * 2, dataArr[i]);
+        printString(buffer);
+    }
+
+    char head2[] = "Object#  Start angle      End angle      Distance     Width";
+    printString(head2);
+    for (i = 0; i < obj; i++)
+    {
+        snprintf(buffer, 100,
+                 "%d            %d            %d           %d               %d",
+                 objArr[i].objNum, objArr[i].startAngle, objArr[i].endAngle,
+                 objArr[i].dist, objArr[i].width);
+        printString(buffer);
+    }
+    snprintf(buffer, 100, "smallest angle location: %d and distance %d",
+             smallWidth[1], smallWidth[2]);
+    printString(buffer);
+    cyBOT_Scan(smallWidth[1], &scan);
+}
+
+int main(void)
+{
+    //Question 1: we will use GPIO reg B because it contains the pin associated with AIN10
+    ///Question 2: we will configure AIN10 (pin 4 of port B) to be analog
+    //Question 3: We will use the hardware approach to do sampling average and set ADCSAC to 0x1
+    //Question 4: You should enable any interrupts that you want to trigger an interrupt in the ADC_IM register
+    //and set bit 14 in the NVIC_EN0_R because that is what corresponds to ADC0 SS0 (pg104 DS)
+    timer_init();
+    adc_init();
+    lcd_init();
+    lcd_clear();
+    uart_init();
+
+//    char my_data;       // Variable to get bytes from Client
+//    char command[100];  // Buffer to store command from Client
+//    int index = 0;      // Index position within the command buffer
+//
+//    // Write to LCD so that we know the program is running
+//    lcd_printf("Running");
+//
+//    while (1)
+//    {
+//
+//        index = 0;  // Set index to the beginning of the command buffer
+//        my_data = uart_receive(); // Get first byte of the command from the Client
+//
+//        // Get the rest of the command until a newline byte (i.e., '\n') received
+//        while (my_data != '\n')
+//        {
+//            command[index] = my_data;  // Place byte into the command buffer
+//            index++;
+//            my_data = uart_receive(); // Get the next byte of the command
+//        }
+//
+//        command[index] = '\n'; // place newline into command in case one wants to echo the full command back to the Client
+//        command[index + 1] = 0; // End command C-string with a NULL byte so that functions like printf know when to stop printing
+//
+//        lcd_printf("Got: %s", command); // Print received command to the LCD screen
+//
+//        // Send a response to the Client (Starter Client expects the response to end with \n)
+//        // In this case I am just sending back the first byte of the command received and a '\n'
+//        uart_sendChar(command[0]);
+//
+//        // Only send a '\n' if the first byte of the command is not a '\n',
+//        // to avoid sending back-to-back '\n' to the client
+//        if (command[0] != '\n')
+//        {
+//            uart_sendChar('\n');
+//        }
+//
+//    }
+
+    //PART 3
+    while(1){
+        char c = uart_receive();
+        if(c == 'm'){
+            ADCscan();
+        }
+
+    }
+//PART 2
+//    data = adc_read();
+//    dist = 98223 * (pow(data, -1.152));
+//    snprintf(dataArr, 100, "The sensor read %d The item is %d cm away", data,
+//             dist);
+//    lcd_puts(dataArr);
+
+    return 0;
+}

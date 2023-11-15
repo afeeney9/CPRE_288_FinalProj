@@ -1,0 +1,113 @@
+/*
+ * movement.c
+ *
+ *  Created on: Sep 7, 2023
+ *      Author: afeeney9
+ */
+#include "cyBot_Scan.h"
+#include "movement.h"
+#include "Timer.h"
+#include "open_interface.h"
+
+#define OFFSET 10
+
+void move_forward(int centimeters)
+{
+    cyBOT_init_Scan(0b0100);
+    right_calibration_value = 290500;
+    left_calibration_value = 1235500;
+    oi_t *sensor = oi_alloc();
+    oi_init(sensor);
+    double sum = 0;
+    oi_setWheels(150, 150); // move forward; full speed
+    while (sum < centimeters * 10)
+    {
+        oi_update(sensor);
+        bump(sensor);
+        sum += sensor->distance;
+    }
+    oi_setWheels(0, 0); // stop
+    oi_free(sensor);
+
+};
+
+
+void bump()
+{
+    cyBOT_init_Scan(0b0100);
+    right_calibration_value = 290500;
+    left_calibration_value = 1235500;
+    oi_t *sensor = oi_alloc();
+    oi_init(sensor);
+    if (sensor->bumpLeft)
+    {
+        move_backward(10);
+        turn_ccw(90);
+        move_forward(5);
+        turn_clockwise(90);
+    }
+    else if (sensor->bumpRight)
+    {
+        move_backward(10);
+        turn_clockwise(90);
+        move_forward(5);
+        turn_ccw(90);
+    }
+}
+
+void turn_clockwise(int degrees)
+{
+    cyBOT_init_Scan(0b0100);
+    right_calibration_value = 290500;
+    left_calibration_value = 1235500;
+    oi_t *sensor = oi_alloc();
+    oi_init(sensor);
+    double angle = 0;
+    oi_setWheels(250, -250);
+    while (angle < degrees - OFFSET)
+    {
+        oi_update(sensor);
+        angle += (sensor->angle);
+    }
+    oi_setWheels(0, 0); // stop
+    oi_free(sensor);
+}
+;
+
+void turn_ccw(int degrees)
+{
+    cyBOT_init_Scan(0b0100)
+    right_calibration_value = 290500;
+    left_calibration_value = 1235500;
+    oi_t *sensor = oi_alloc();
+    oi_init(sensor);
+    double angle = 0;
+    oi_setWheels(-250, 250);
+    while (abs(angle) < degrees - OFFSET)
+    {
+        oi_update(sensor);
+        angle += (sensor->angle);
+    }
+    oi_setWheels(0, 0); // stop
+    oi_free(sensor);
+}
+;
+void move_backward(int centimeters)
+{
+    cyBOT_init_Scan(0b0100);
+    right_calibration_value = 290500;
+    left_calibration_value = 1235500;
+    oi_t *sensor = oi_alloc();
+    oi_init(sensor);
+    double sum = 0;
+    oi_setWheels(-250, -250); // move backward
+    while (sum < centimeters * 10)
+    {
+        oi_update(sensor);
+        sum += abs(sensor->distance);
+    }
+    oi_setWheels(0, 0); // stop
+    oi_free(sensor);
+
+}
+;

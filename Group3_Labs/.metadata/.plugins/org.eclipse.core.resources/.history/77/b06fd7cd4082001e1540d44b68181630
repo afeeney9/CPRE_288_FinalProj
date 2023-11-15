@@ -1,0 +1,70 @@
+/*
+ * movement.c
+ *
+ *  Created on: Sep 7, 2023
+ *      Author: afeeney9
+ */
+#include "movement.h"
+#include "Timer.h"
+#include "open_interface.h"
+
+#define OFFSET 10
+
+void move_forward(oi_t *sensor, int centimeters){
+        oi_init(sensor);
+         double sum = 0;
+         oi_setWheels(150, 150); // move forward; full speed
+         while (sum < centimeters*10) {
+             oi_update(sensor);
+             bump(sensor);
+             sum += sensor->distance;
+         }
+         oi_setWheels(0, 0); // stop
+         //oi_free(sensor_data);
+
+};
+
+void bump(oi_t *sensor)
+{
+    if (sensor->bumpLeft)
+    {
+        move_backward(sensor, 10);
+        turn_ccw(sensor, 90);
+        move_forward(sensor, 5);
+        turn_clockwise(sensor, 90);
+    }
+    else if (sensor->bumpRight)
+    {
+        move_backward(sensor, 10);
+        turn_clockwise(sensor, 90);
+        move_forward(sensor, 5);
+        turn_ccw(sensor, 90);
+    }
+}
+
+void turn_clockwise(oi_t *sensor, int degrees){
+    oi_init(sensor);
+    double angle = 0;
+    oi_setWheels(250, -250); 
+    while (angle < degrees-OFFSET){
+        oi_update(sensor);
+        angle += (sensor->angle);
+    }
+    oi_setWheels(0, 0); // stop
+    //oi_free(sensor_data);
+};
+
+void turn_ccw(oi_t *sensor, int degrees){
+    double angle = 0;
+    oi_setWheels(-250, 250); 
+    timer_waitMicros(5);
+    oi_setWheels(0, 0); // stop
+};
+void move_backward(int centimeters){
+         double sum = 0;
+         oi_setWheels(-250, -250); // move backward
+         timer_waitMicros(10);
+         oi_setWheels(0, 0); // stop
+         //oi_free(sensor);
+
+};
