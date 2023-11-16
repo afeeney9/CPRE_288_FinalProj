@@ -26,6 +26,11 @@ main.obj: C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/xlocale
 main.obj: ../ping.h
 main.obj: ../uart.h
 main.obj: ../servo.h
+main.obj: ../scan.h
+main.obj: ../ping.h
+main.obj: ../adc.h
+main.obj: ../servo.h
+main.obj: ../adc.h
 
 ../main.c:
 
@@ -78,4 +83,14 @@ C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/xlocale/_string.h
 ../uart.h:
 
 ../servo.h:
+
+../scan.h:
+
+../ping.h:
+
+../adc.h:
+
+../servo.h:
+
+../adc.h:
 

@@ -6,6 +6,8 @@
 #include "ping.h"
 #include "uart.h"
 #include "servo.h"
+#include "scan.h"
+#include "adc.h"
 #include <inc/tm4c123gh6pm.h>
 
 int main(void)
@@ -16,10 +18,14 @@ int main(void)
     servo_init();
     ping_init();
     uart_init();
+    adc_init();
 
     while(1){
         char uart_char = uart_receive();
         lcd_putc(uart_char);
+        if(uart_char == 'm'){
+            scan();
+        }
     }
 	return 0;
 }

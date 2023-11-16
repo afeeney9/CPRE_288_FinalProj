@@ -1,0 +1,13 @@
+
+#include "ping.h"
+
+volatile enum
+{
+    LOW, HIGH, DONE
+} state;
+volatile unsigned int rising_time;
+volatile unsigned int falling_time;
+
+void scan()
+{
+}
