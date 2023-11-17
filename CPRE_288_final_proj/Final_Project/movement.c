@@ -1,17 +1,183 @@
+#include <stdio.h>
+#include <math.h>
 #include "movement.h"
 #include "open_interface.h"
 #include "lcd.h"
 #include "uart.h"
 #include "Timer.h"
 
-#define OFFSET 5
+#define OFFSET 16
 #define OneSquare 550
+#define PI 3.14159265358979323846
 
+
+//Main for movement test
+/*
+ * #include <stdint.h>
+#include <stdbool.h>
+#include <Math.h>
+#include "open_interface.h"
+#include "movement.h"
+#include "uart.h"
+#include "Timer.h"
+#include "lcd.h"
+#include <inc/tm4c123gh6pm.h>
+#include <inttypes.h>
+
+int main(void)
+{
+
+
+    //Initializations
+    //-----------------------
+    timer_init();
+    lcd_init();
+    uart_init();
+    oi_t *sensor_data = oi_alloc();
+    oi_init(sensor_data);
+    //-----------------------
+
+
+    extern struct cyBotPos cyBotPos;
+    cyBotPos.posX = 0;
+    cyBotPos.posY = 0;
+    cyBotPos.direction = 90;
+
+//check cliff sensor values
+//    while(1){
+//        oi_update(sensor_data);
+//        lcd_printf("%"PRIu16"", sensor_data -> cliffFrontLeftSignal);
+//    }
+
+    char c = ' ';
+    while(1){
+        c = uart_receive();
+        switch(c){
+        case 'w':
+            move_forward(sensor_data, 100);
+            break;
+        case 'a':
+            turn_cclockwise(sensor_data, 45);
+            break;
+        case 'd':
+            turn_clockwise(sensor_data, 45);
+            break;
+        }
+    }
+
+    //fieldScan(sensor_data);
+
+
+
+    return 0;
+}
+
+*/
+ */
 
 extern struct cyBotPos cyBotPos;
 extern struct object objectList[15];
 int i;
 int objectCount = 0;
+char cyBotPosString[10];
+
+
+void move_forward(oi_t *sensor, int millimeters){
+     oi_init(sensor);
+     double sum = 0;
+     oi_setWheels(250, 250); // move forward; full speed
+
+     while (sum < millimeters) {
+         oi_update(sensor);
+         sum += sensor->distance;
+
+//         //position incrementing
+         cyBotPos.posX += cos(cyBotPos.direction*PI /180) * sensor->distance;
+         cyBotPos.posY += sin(cyBotPos.direction*PI /180) * sensor->distance;
+
+         //crater detection
+         if(sensor->bumpLeft){
+             oi_setWheels(0 ,0);
+             sprintf(cyBotPosString, "%d, %d \r\n%d\r\n'l'\r\n", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+             uart_sendStr(cyBotPosString);
+             return;
+         }
+         if(sensor->bumpRight){
+             oi_setWheels(0, 0);
+             sprintf(cyBotPosString, "%d, %d \r\n%d\r\n'r'\r\n", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+             uart_sendStr(cyBotPosString);
+             return;
+         }
+
+         //edge detection
+         if(sensor -> cliffFrontLeftSignal > 2600 || sensor -> cliffFrontRightSignal >2600){
+             //move_backwards(sensor, 150);
+             oi_setWheels(0,0);
+             sprintf(cyBotPosString, "%d, %d \r\n%d\r\n'e'\r\n", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+             uart_sendStr(cyBotPosString);
+             return;
+         }
+         lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+
+
+     }
+     lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+     sprintf(cyBotPosString, "%d, %d \r\n%d\r\n's'\r\n", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+     uart_sendStr(cyBotPosString);
+     oi_setWheels(0, 0); // stop
+}
+void move_backwards(oi_t *sensor, int millimeters){
+     oi_init(sensor);
+     double sum = 0;
+     oi_setWheels(-250, -250); // move back; full speed
+
+     while (sum > -millimeters) {
+     oi_update(sensor);
+     lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+     sum += sensor->distance;
+     }
+     oi_setWheels(0, 0); // stop
+}
+
+void turn_clockwise(oi_t *sensor, int degrees){
+    oi_init(sensor);
+    double angle = 0;
+    oi_setWheels(-250, 250);
+    int dist = degrees - OFFSET;
+    cyBotPos.direction -= degrees;
+    while (angle > -dist) {
+        oi_update(sensor);
+        //angle += (sensor->angle / 0.324056);
+        angle += (sensor->angle);
+        if(cyBotPos.direction<0){
+            cyBotPos.direction = 360 + cyBotPos.direction;
+        }
+        lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+
+    }
+
+    oi_setWheels(0, 0); // stop
+}
+void turn_cclockwise(oi_t *sensor, int degrees){
+    oi_init(sensor);
+    double angle = 0;
+    oi_setWheels(250, -250);
+    int dist = degrees - OFFSET;
+    cyBotPos.direction += degrees;
+    while (angle < dist) {
+        oi_update(sensor);
+        //angle += (sensor->angle / 0.324056);
+        angle += (sensor->angle);
+        if(cyBotPos.direction>=360){
+            cyBotPos.direction = cyBotPos.direction % 360;
+        }
+        lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+
+    }
+    oi_setWheels(0, 0); // stop
+}
+
+
 
 //make sure its going straight
 //TODO
@@ -50,7 +216,7 @@ void moveForwardTillWall(oi_t *sensor, int limit){
 //            }
 //        }
 
-        lcd_printf("%d, %d \n%c", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+        lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
 
 
 
@@ -70,7 +236,7 @@ void fieldScan(oi_t *sensor){
 //    moveForwardTillWall(sensor, 14);
     moveForwardTillWall(sensor, 4);
     move_forward(sensor, 100);
-    turn_clockwise(sensor, 215);
+    turn_clockwise(sensor, 225);
     cyBotPos.posX = 14;
     cyBotPos.posY = 12;
     //check if there no object in path between squares 12 and 14
@@ -85,102 +251,10 @@ void fieldScan(oi_t *sensor){
     cyBotPos.posX = 16;
     cyBotPos.posY = 18;
     timer_waitMillis(500);//scan 16 and 18
-    turn_clockwise(sensor, 215);
+    turn_clockwise(sensor, 225);
     cyBotPos.direction = 'S';
     cyBotPos.posX = 18;
     cyBotPos.posY = 17;
     timer_waitMillis(500);//scan 17 and 18
     moveForwardTillWall(sensor, 28);
 }
-
-void move_forward(oi_t *sensor, int millimeters){
-     oi_init(sensor);
-     double sum = 0;
-     oi_setWheels(250, 250); // move forward; full speed
-
-     while (sum < millimeters && sensor -> cliffFrontLeftSignal < 2700 && sensor -> cliffFrontRightSignal < 2700) {
-     oi_update(sensor);
-     lcd_printf("%d, %d \n%c", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
-     sum += sensor->distance;
-
-
-     //crater detection
-     if(sensor->bumpLeft){
-         move_backwards(sensor, 150);
-         sum -= 30;
-         turn_clockwise(sensor, 250);
-         move_forward(sensor, 250);
-         turn_cclockwise(sensor, 250);
-         oi_setWheels(250,250);
-         }
-     if(sensor->bumpRight){
-         move_backwards(sensor, 150);
-         sum -= 30;
-         turn_cclockwise(sensor, 250);
-         move_forward(sensor, 250);
-         turn_clockwise(sensor, 250);
-         oi_setWheels(250,250);
-         }
-
-     //edge detection
-//     if(sensor -> cliffFrontLeftSignal > 2300 || sensor -> cliffFrontRightSignal >2300){
-//         move_backwards(sensor, 150);
-//         turn_clockwise(sensor, 250);
-//         oi_setWheels(250,250);
-//
-//     }
-
-     }
-
-
-
-
-
-     oi_setWheels(0, 0); // stop
-}
-void move_backwards(oi_t *sensor, int millimeters){
-     oi_init(sensor);
-     double sum = 0;
-     oi_setWheels(-250, -250); // move back; full speed
-
-     while (sum > -millimeters) {
-     oi_update(sensor);
-     lcd_printf("%d, %d \n%c", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
-     sum += sensor->distance;
-     }
-     oi_setWheels(0, 0); // stop
-}
-
-void turn_clockwise(oi_t *sensor, int degrees){
-    oi_init(sensor);
-    double angle = 0;
-    oi_setWheels(-250, 250);
-    int dist = degrees - OFFSET;
-    while (angle > -dist) {
-    oi_update(sensor);
-    angle += (sensor->angle / 0.324056);
-    }
-    oi_setWheels(0, 0); // stop
-}
-void turn_cclockwise(oi_t *sensor, int degrees){
-    oi_init(sensor);
-    double angle = 0;
-    oi_setWheels(250, -250);
-    int dist = degrees - OFFSET;
-    while (angle < dist) {
-    oi_update(sensor);
-    angle += (sensor->angle / 0.324056);
-    }
-    oi_setWheels(0, 0); // stop
-}
-
-void newObject(int objNum,int startAngle,int dist,int width,int endAngle,int y,int x,char type){
-    objectList[objectCount].objNum = objectCount;
-    objectList[objectCount].dist = dist;
-    objectList[objectCount].width = width;
-    objectList[objectCount].endAngle = endAngle;
-    objectList[objectCount].y = y;
-    objectList[objectCount].x = x;
-    objectList[objectCount].type = type;
-}
-
