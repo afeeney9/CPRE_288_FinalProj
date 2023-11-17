@@ -137,9 +137,26 @@ void move_forward(oi_t *sensor, int millimeters)
             send_pos('c');
             return;
         }
+<<<<<<< HEAD
         lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY,
                    cyBotPos.direction);
 
+=======
+
+        //hole detection
+        if(sensor -> cliffFrontLeftSignal < 400 || sensor -> cliffFrontRightSignal < 400){
+            move_backwards(sensor, 50);
+            oi_setWheels(0,0);
+            // sprintf(cyBotPosString, "%d, %d \r\n%d\r\n'h'\r\n", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
+            // uart_sendStr(cyBotPosString);
+            send_pos('h');
+            return;
+        }
+
+        lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY,
+                   cyBotPos.direction);
+
+>>>>>>> b0721cb0eb8d2392a739b01786714d296a6b71d9
     }
     lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
 //     sprintf(cyBotPosString, "%d, %d \r\n%d\r\n's'\r\n", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
@@ -156,6 +173,14 @@ void move_backwards(oi_t *sensor, int millimeters)
     while (sum > -millimeters)
     {
         oi_update(sensor);
+<<<<<<< HEAD
+=======
+
+        //position incrementing
+        cyBotPos.posX += cos(cyBotPos.direction*PI /180) * sensor->distance;
+        cyBotPos.posY += sin(cyBotPos.direction*PI /180) * sensor->distance;
+        
+>>>>>>> b0721cb0eb8d2392a739b01786714d296a6b71d9
         lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY,
                    cyBotPos.direction);
         sum += sensor->distance;
