@@ -137,11 +137,6 @@ void move_forward(oi_t *sensor, int millimeters)
             send_pos('c');
             return;
         }
-<<<<<<< HEAD
-        lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY,
-                   cyBotPos.direction);
-
-=======
 
         //hole detection
         if(sensor -> cliffFrontLeftSignal < 400 || sensor -> cliffFrontRightSignal < 400){
@@ -156,7 +151,6 @@ void move_forward(oi_t *sensor, int millimeters)
         lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY,
                    cyBotPos.direction);
 
->>>>>>> b0721cb0eb8d2392a739b01786714d296a6b71d9
     }
     lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
 //     sprintf(cyBotPosString, "%d, %d \r\n%d\r\n's'\r\n", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
