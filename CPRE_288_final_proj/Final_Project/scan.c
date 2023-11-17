@@ -36,6 +36,7 @@ void scan()
     char buffer[100];
 
     int obj = 0;
+    int data;
 
     while (matchVal > oneEightyMatch)
     {
@@ -43,7 +44,7 @@ void scan()
         servo_move(matchVal);
         timer_waitMillis(100);
         matchVal -= decrement;
-        int data = adc_read();
+        data = adc_read();
         data = (98223 * (pow(data, -1.152)))/2;
         dataArr[i] = data;
         i++;
@@ -88,7 +89,7 @@ void scan()
     for(i=0; i < obj; i++){
         timer_waitMillis(200);
         servo_move(zeroMatch - (((objArr[i].endAngle +objArr[i].startAngle)/2)+ scanOffset)*(decrement/2));
-        timer_waitMillis(1000);
+        timer_waitMillis(800);
         int pulse_time = ping_read();
         pulse_time = (abs(pulse_time) / (2 * 16)) * 0.034;
         objArr[i].dist = pulse_time;
@@ -111,6 +112,12 @@ void scan()
                  "%d            %d            %d           %d               %d",
                  objArr[i].objNum, objArr[i].startAngle, objArr[i].endAngle,
                  objArr[i].dist, objArr[i].width);
+        printString(buffer);
+        snprintf(buffer, 100, "%d", (objArr[i].startAngle + objArr[i].endAngle)/2;
+        printString(buffer);
+        snprintf(buffer, 100, "%d", objArr[i].dist);
+        printString(buffer);
+        snprintf(buffer, 100, "%d", objArr[i].width);
         printString(buffer);
     }
 }
