@@ -1,14 +1,21 @@
 import tkinter as tk
 # Serial library:  https://pyserial.readthedocs.io/en/latest/shortintro.html 
 import serial
+import math
 import time # Time library   
 # Socket library:  https://realpython.com/python-sockets/  
 # See: Background, Socket API Overview, and TCP Sockets  
 import socket   
 
+#global vars x,y track cybots current pos and dir tracks direction cybot is currently facing 
+#objId is equal to number of objects 
 x=0
 y=0
 dir = 'n'
+
+obj_list = {}
+
+
 window = tk.Tk()
 frame_moveFoward = tk.Frame()
 frame_one = tk.Frame()
@@ -74,12 +81,10 @@ btnScan = tk.Button(
     fg="white"
     )
 
+obj_ID = 1
+
 def update_pos(cybot):
-    bumped = cybot.readline().decode()
-    bumped = bumped.strip('\r').strip('\n').strip('\r')
-    print(bumped)
-    if(bumped == 'y'):
-        print("Hit Something")
+    global obj_ID
     index = cybot.readline().decode()
     x = int(index)
     #print("X pos " + str(index))
@@ -89,6 +94,14 @@ def update_pos(cybot):
     index = cybot.readline().decode()
     dir = index
     #print("Dir " + str(index))
+    bumped = cybot.readline().decode()
+    bumped = bumped.strip('\r').strip('\n').strip('\r')    
+    if(bumped == 'y'):
+        obj_list['OBJ'+ str(obj_ID)] = {'posX': x, 'posY': y, 'type': "crater"}
+    if(bumped == 'c'):
+        obj_list['OBJ'+ str(obj_ID)] = {'posX': x, 'posY': y, 'type': "crater"}
+    obj_ID += 1
+    print(obj_list)
 
 def handle_forward(event):
     HOST = "192.168.1.1"  # The server's hostname or IP address
@@ -106,8 +119,7 @@ def handle_forward(event):
         send_message = chr(send_message)
         cybot.write(send_message.encode())
         entry.delete(0, tk.END)
-    update_pos(cybot)
-    
+    update_pos(cybot)    
     time.sleep(1) # Sleep for 2 seconds
     cybot.close()         # Close file object associated with the socket or UART
     cybot_socket.close()  # Close the socket (NOTE: comment out if using UART interface, only use for network socket option)
@@ -180,6 +192,7 @@ def handle_back(event):
     cybot_socket.close()  # Close the socket (NOTE: comment out if using UART interface, only use for network socket option)
 
 def handle_scan(event):
+    global obj_ID
     HOST = "192.168.1.1"  # The server's hostname or IP address
     PORT = 288        # The port used by the server
     cybot_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
@@ -194,9 +207,29 @@ def handle_scan(event):
             index = cybot.readline().decode()
             index = int(index.strip('/r'))
             print("Number of objects "+ str(index))
-            while(index >= 0):
+            rx_message = cybot.readline()
+            print(rx_message.decode())
+            while(index > 0):
                 rx_message = cybot.readline()
                 print(rx_message.decode())
+                angle = cybot.readline().decode()
+                angle = int(angle.strip('/r'))
+                distance = cybot.readline().decode()
+                distance = int(distance.strip('/r'))
+                width =cybot.readline().decode()
+                width = int(width.strip('/r'))
+                if(angle > 90):
+                    angle -=90
+                else:
+                    angle = 90 -angle
+                posx = x + math.sin(math.radians(angle)) * distance
+                posy = y + math.cos(math.radians(angle)) * distance
+                if( width <= 6):
+                    obj_type = "rock"
+                else:
+                    obj_type = "storm"
+                obj_list['OBJ' + str(obj_ID)] = {'posX': posx, 'posY': posy, 'type': obj_type}
+                obj_ID +=1
                 index -= 1
         else:
             rx_message = cybot.readline()
