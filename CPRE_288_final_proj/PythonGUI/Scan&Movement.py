@@ -19,12 +19,14 @@ obj_list = {}
 
 
 window = tk.Tk()
-window.geometry("750x500")
+window.geometry("900x500")
 
 frame_moveFoward = tk.Frame()
 frame_one = tk.Frame()
 frame_two = tk.Frame()
 frame_three = tk.Frame()
+frame_four = tk.Frame()
+
 grid = tk.Frame()
 init_color = 'blue' 
 box_size = 61
@@ -153,17 +155,33 @@ btn_scan = tk.Button(
     bg="black",
     fg="white"
     )
+cybot_pos = tk.Label(
+    master = frame_four,
+    text="Cybot is at: " + str(x) + ", " + str(y),
+    width=70,
+    height= 2,
+    fg="black",
+    bg="white"
+)
+object_list = tk.Label(
+    master = frame_four,
+    text="Objects located at:",
+    fg="black",
+    bg="white"
+)
 
 obj_ID = 1
+def add_object(new_obj):
+    s = object_list.cget("text")
+    s += new_obj
+    object_list.config(text = s)
 
 def determind_box(x, y, color):
     tile_size = 55
     if(x <= tile_size & y <= tile_size):
         square_1.configure(bg=color)
-        square_1.create_oval(tile_size-x, tile_size-y, x+10, y+10, fill='red')
     elif(x <= tile_size*2 & y <= tile_size):
         square_2.configure(bg=color)
-        square_2.create_oval(tile_size-x, tile_size-y, tile_size-x+10, tile_size-y+10, fill='red')
     elif(x <= tile_size*3 & y <= tile_size):
         square_3.configure(bg=color)
     elif(x <= tile_size*4 & y <= tile_size):
@@ -222,7 +240,7 @@ def update_pos(cybot):
     global obj_ID
     index = cybot.readline().decode()
     x = int(index)
-    #print("X pos " + str(index))
+    print("X pos " + str(index))
     index = cybot.readline().decode()
     y = int(index)
     #print("Y pos " + str(index))
@@ -233,9 +251,11 @@ def update_pos(cybot):
     bumped = bumped.strip('\r').strip('\n').strip('\r')    
     if(bumped == 'y'):
         obj_list['OBJ'+ str(obj_ID)] = {'posX': x, 'posY': y, 'type': "crater"}
+        obj_ID += 1
     if(bumped == 'c'):
         obj_list['OBJ'+ str(obj_ID)] = {'posX': x, 'posY': y, 'type': "crater"}
-    obj_ID += 1
+        obj_ID += 1
+    cybot_pos.set("Cybot is at: " + x + ", " +y )
     print(obj_list)
 
 def handle_forward(event):
@@ -288,7 +308,7 @@ def handle_right(event):
     cybot_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
     cybot_socket.connect((HOST, PORT))   # Connect to the socket  (Note: Server must first be running)
     cybot = cybot_socket.makefile("rbw", buffering=0)  # makefile creates a file object out of a socket:  https://pythontic.com/modules/socket/makefile
-                    
+    print("right")                
     if(entry.get() == ""):                    
         send_message = "r"
         cybot.write(send_message.encode()) # Convert String to bytes (i.e., encode), and send data to the server
@@ -299,7 +319,9 @@ def handle_right(event):
         send_message = chr(send_message)
         cybot.write(send_message.encode())
         entry.delete(0, tk.END)
+    print("right")                
     update_pos(cybot)
+    print("right")         
     time.sleep(2) # Sleep for 2 seconds
     cybot.close()         # Close file object associated with the socket or UART
     cybot_socket.close()  # Close the socket (NOTE: comment out if using UART interface, only use for network socket option)
@@ -310,7 +332,6 @@ def handle_back(event):
     cybot_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
     cybot_socket.connect((HOST, PORT))   # Connect to the socket  (Note: Server must first be running)
     cybot = cybot_socket.makefile("rbw", buffering=0)  # makefile creates a file object out of a socket:  https://pythontic.com/modules/socket/makefile
-                    
     if(entry.get() == ""):                    
         send_message = "b"
         cybot.write(send_message.encode()) # Convert String to bytes (i.e., encode), and send data to the server
@@ -359,6 +380,22 @@ def handle_scan(event):
                     angle = 90 -angle
                 pos_x = int(x + math.sin(math.radians(angle)) * distance)
                 pos_y = int(y + math.cos(math.radians(angle)) * distance)
+                # is_new = True
+                # for obj in obj_list:
+                #     if(pos_x < int(obj.posX)+10 & pos_x > int(obj.posX) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
+                #         is_new = False
+                #         break
+                    
+                # if(is_new):
+                #     if( width <= 6):
+                #         obj_type = "rock"
+                #         determind_box(pos_x, pos_y, 'grey')
+                #     else:
+                #         obj_type = "storm"
+                #         determind_box(pos_x, pos_y, 'orange')
+                #     obj_list['OBJ' + str(obj_ID)] = {'posX': pos_x, 'posY': pos_y, 'type': obj_type}
+                #     add_object("\nOBJ" + str(obj_ID) + " at position x:" + str(pos_x) + " , y:" + str(pos_y) + " object is a " + obj_type )
+                #     obj_ID +=1
                 if( width <= 6):
                     obj_type = "rock"
                     determind_box(pos_x, pos_y, 'grey')
@@ -368,6 +405,7 @@ def handle_scan(event):
                 obj_list['OBJ' + str(obj_ID)] = {'posX': pos_x, 'posY': pos_y, 'type': obj_type}
                 obj_ID +=1
                 index -= 1
+                
         else:
             rx_message = cybot.readline()
             print(rx_message.decode())
@@ -384,11 +422,14 @@ btn_back_OS.pack()
 btn_scan.pack()
 forward_lable.pack()
 entry.pack()
+cybot_pos.pack()
+object_list.pack()
 frame_moveFoward.pack(fill=tk.X)
 frame_one.pack(fill=tk.X)
 frame_two.pack(fill=tk.X)
 frame_three.pack(fill=tk.X)
 grid.pack()
+frame_four.pack(fill=tk.X)
 
 btn_forward.bind("<Button-1>", handle_forward)
 btn_left.bind("<Button-1>", handle_left)
