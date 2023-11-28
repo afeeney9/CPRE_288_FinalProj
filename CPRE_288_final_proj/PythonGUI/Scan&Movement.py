@@ -255,7 +255,7 @@ def update_pos(cybot):
     if(bumped == 'c'):
         obj_list['OBJ'+ str(obj_ID)] = {'posX': x, 'posY': y, 'type': "crater"}
         obj_ID += 1
-    cybot_pos.config(text = "Cybot is at: " + x + ", " +y )
+    cybot_pos.config(text = "Cybot is at: " + str(x) + ", " + str(y) )
     print(obj_list)
 
 def handle_forward(event):
@@ -381,12 +381,12 @@ def handle_scan(event):
                 pos_x = int(x + math.sin(math.radians(angle)) * distance)
                 pos_y = int(y + math.cos(math.radians(angle)) * distance)
                 is_new = True
-                for obj in obj_list:
-                    if(pos_x < int(obj.posX)+10 & pos_x > int(obj.posX) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
-                        is_new = False
-                        break
+                # for obj in obj_list:
+                #     if(pos_x < int(obj[posX])+10 & pos_x > int(obj[posX]) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
+                #         is_new = False
+                #         break
                     
-                if(is_new):
+                if(True):
                     if( width <= 6):
                         obj_type = "rock"
                         determind_box(pos_x, pos_y, 'grey')
