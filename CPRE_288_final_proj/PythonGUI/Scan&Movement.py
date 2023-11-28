@@ -255,7 +255,7 @@ def update_pos(cybot):
     if(bumped == 'c'):
         obj_list['OBJ'+ str(obj_ID)] = {'posX': x, 'posY': y, 'type': "crater"}
         obj_ID += 1
-    cybot_pos.set("Cybot is at: " + x + ", " +y )
+    cybot_pos.config(text = "Cybot is at: " + x + ", " +y )
     print(obj_list)
 
 def handle_forward(event):
@@ -380,22 +380,22 @@ def handle_scan(event):
                     angle = 90 -angle
                 pos_x = int(x + math.sin(math.radians(angle)) * distance)
                 pos_y = int(y + math.cos(math.radians(angle)) * distance)
-                # is_new = True
-                # for obj in obj_list:
-                #     if(pos_x < int(obj.posX)+10 & pos_x > int(obj.posX) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
-                #         is_new = False
-                #         break
+                is_new = True
+                for obj in obj_list:
+                    if(pos_x < int(obj.posX)+10 & pos_x > int(obj.posX) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
+                        is_new = False
+                        break
                     
-                # if(is_new):
-                #     if( width <= 6):
-                #         obj_type = "rock"
-                #         determind_box(pos_x, pos_y, 'grey')
-                #     else:
-                #         obj_type = "storm"
-                #         determind_box(pos_x, pos_y, 'orange')
-                #     obj_list['OBJ' + str(obj_ID)] = {'posX': pos_x, 'posY': pos_y, 'type': obj_type}
-                #     add_object("\nOBJ" + str(obj_ID) + " at position x:" + str(pos_x) + " , y:" + str(pos_y) + " object is a " + obj_type )
-                #     obj_ID +=1
+                if(is_new):
+                    if( width <= 6):
+                        obj_type = "rock"
+                        determind_box(pos_x, pos_y, 'grey')
+                    else:
+                        obj_type = "storm"
+                        determind_box(pos_x, pos_y, 'orange')
+                    obj_list['OBJ' + str(obj_ID)] = {'posX': pos_x, 'posY': pos_y, 'type': obj_type}
+                    add_object("\nOBJ" + str(obj_ID) + " at position x:" + str(pos_x) + " , y:" + str(pos_y) + " object is a " + obj_type )
+                    obj_ID +=1
                 if( width <= 6):
                     obj_type = "rock"
                     determind_box(pos_x, pos_y, 'grey')
