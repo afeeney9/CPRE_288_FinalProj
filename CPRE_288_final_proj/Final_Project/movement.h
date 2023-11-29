@@ -25,4 +25,5 @@ void move_forward(oi_t *sensor, int millimeters);
 void move_backwards(oi_t *sensor, int millimeters);
 void turn_clockwise(oi_t *sensor, int degrees);
 void turn_cclockwise(oi_t *sensor, int degrees);
+void init_pos(void);
 #endif /* MOVEMENT_H_ */
