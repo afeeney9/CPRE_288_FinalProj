@@ -11,8 +11,8 @@ import socket
 
 #global vars x,y track cybots current pos and dir tracks direction cybot is currently facing 
 #objId is equal to number of objects 
-x=0
-y=0
+x=275
+y=275
 dir = 'n'
 
 obj_list = {}
@@ -158,8 +158,8 @@ btn_scan = tk.Button(
 cybot_pos = tk.Label(
     master = frame_four,
     text="Cybot is at: " + str(x) + ", " + str(y),
-    width=70,
-    height= 2,
+    width=80,
+    height= 3,
     fg="black",
     bg="white"
 )
@@ -177,7 +177,7 @@ def add_object(new_obj):
     object_list.config(text = s)
 
 def determind_box(x, y, color):
-    tile_size = 55
+    tile_size = 550
     if(x <= tile_size & y <= tile_size):
         square_1.configure(bg=color)
     elif(x <= tile_size*2 & y <= tile_size):
@@ -255,7 +255,8 @@ def update_pos(cybot):
     if(bumped == 'c'):
         obj_list['OBJ'+ str(obj_ID)] = {'posX': x, 'posY': y, 'type': "crater"}
         obj_ID += 1
-    cybot_pos.config(text = "Cybot is at: " + str(x) + ", " + str(y) )
+    cybot_pos.config(text = "Cybot is at: " + str(x) + ", " + str(y) + " direction: " + str(dir))
+    cybot_pos.config(justify='center')
     print(obj_list)
 
 def handle_forward(event):
@@ -378,15 +379,15 @@ def handle_scan(event):
                     angle -=90
                 else:
                     angle = 90 -angle
-                pos_x = int(x + math.sin(math.radians(angle)) * distance)
-                pos_y = int(y + math.cos(math.radians(angle)) * distance)
+                pos_x = int(x + (math.sin(math.radians(angle)) * distance)*10)
+                pos_y = int(y + (math.cos(math.radians(angle)) * distance)*10)
                 is_new = True
-                # for obj in obj_list:
-                #     if(pos_x < int(obj[posX])+10 & pos_x > int(obj[posX]) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
-                #         is_new = False
-                #         break
+                for obj in obj_list:
+                    if(pos_x < int(obj.posX)+10 & pos_x > int(obj.posX) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
+                        is_new = False
+                        break
                     
-                if(True):
+                if(is_new):
                     if( width <= 6):
                         obj_type = "rock"
                         determind_box(pos_x, pos_y, 'grey')
