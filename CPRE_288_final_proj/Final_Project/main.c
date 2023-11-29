@@ -22,6 +22,7 @@ int main(void)
     adc_init();
     oi_t *sensor_data = oi_alloc();
     oi_init(sensor_data);
+    init_pos();
 
     while(1){
         char uart_char = uart_receive();
