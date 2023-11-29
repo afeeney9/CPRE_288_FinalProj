@@ -113,7 +113,7 @@ void scan()
                  objArr[i].objNum, objArr[i].startAngle, objArr[i].endAngle,
                  objArr[i].dist, objArr[i].width);
         printString(buffer);
-        snprintf(buffer, 100, "%d", (objArr[i].startAngle + objArr[i].endAngle)/2;
+        snprintf(buffer, 100, "%d ", (objArr[i].startAngle + objArr[i].endAngle)/2);
         printString(buffer);
         snprintf(buffer, 100, "%d", objArr[i].dist);
         printString(buffer);

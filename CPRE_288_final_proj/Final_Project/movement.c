@@ -167,14 +167,12 @@ void move_backwards(oi_t *sensor, int millimeters)
     while (sum > -millimeters)
     {
         oi_update(sensor);
-<<<<<<< HEAD
-=======
+
 
         //position incrementing
         cyBotPos.posX += cos(cyBotPos.direction*PI /180) * sensor->distance;
         cyBotPos.posY += sin(cyBotPos.direction*PI /180) * sensor->distance;
-        
->>>>>>> b0721cb0eb8d2392a739b01786714d296a6b71d9
+
         lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY,
                    cyBotPos.direction);
         sum += sensor->distance;
