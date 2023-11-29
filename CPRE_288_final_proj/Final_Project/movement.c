@@ -79,6 +79,12 @@ int i;
 int objectCount = 0;
 char cyBotPosString[10];
 
+void init_pos(){
+    cyBotPos.posX = 275;
+    cyBotPos.posY = 275;
+    cyBotPos.direction = 0;
+}
+
 void send_pos(char bump){
     sprintf(cyBotPosString, "%d\r\n", cyBotPos.posX);
     uart_sendStr(cyBotPosString);
@@ -172,7 +178,7 @@ void move_backwards(oi_t *sensor, int millimeters)
         //position incrementing
         cyBotPos.posX += cos(cyBotPos.direction*PI /180) * sensor->distance;
         cyBotPos.posY += sin(cyBotPos.direction*PI /180) * sensor->distance;
-        
+
         lcd_printf("%d, %d \n%d", cyBotPos.posX, cyBotPos.posY,
                    cyBotPos.direction);
         sum += sensor->distance;
