@@ -9,6 +9,8 @@
 #define OFFSET 16
 #define OneSquare 550
 #define PI 3.14159265358979323846
+#define leftWheelSpeed 250
+#define rightWheelSpeed 250
 
 //Main for movement test
 /*
@@ -79,6 +81,12 @@ int i;
 int objectCount = 0;
 char cyBotPosString[10];
 
+void init_pos(){
+    cyBotPos.posX = 275;
+    cyBotPos.posY =  275;
+    cyBotPos.direction =0;
+}
+
 void send_pos(char bump){
     sprintf(cyBotPosString, "%d\r\n", cyBotPos.posX);
     uart_sendStr(cyBotPosString);
@@ -94,7 +102,7 @@ void move_forward(oi_t *sensor, int millimeters)
 {
     oi_init(sensor);
     double sum = 0;
-    oi_setWheels(250, 250); // move forward; full speed
+    oi_setWheels(rightWheelSpeed, leftWheelSpeed); // move forward; full speed
 
     while (sum < millimeters)
     {
@@ -140,11 +148,12 @@ void move_forward(oi_t *sensor, int millimeters)
 
         //hole detection
         if(sensor -> cliffFrontLeftSignal < 400 || sensor -> cliffFrontRightSignal < 400){
-            move_backwards(sensor, 50);
+
             oi_setWheels(0,0);
             // sprintf(cyBotPosString, "%d, %d \r\n%d\r\n'h'\r\n", cyBotPos.posX, cyBotPos.posY, cyBotPos.direction);
             // uart_sendStr(cyBotPosString);
             send_pos('h');
+            move_backwards(sensor, 50);
             return;
         }
 
@@ -162,7 +171,7 @@ void move_backwards(oi_t *sensor, int millimeters)
 {
     oi_init(sensor);
     double sum = 0;
-    oi_setWheels(-250, -250); // move back; full speed
+    oi_setWheels(-rightWheelSpeed, -leftWheelSpeed); // move back; full speed
 
     while (sum > -millimeters)
     {

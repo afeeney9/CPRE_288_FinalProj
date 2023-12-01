@@ -55,7 +55,7 @@ void scan()
     while (i <= 91)
     {
         if (dataArr[i] - 4 < dataArr[i - 1] && dataArr[i - 1] < dataArr[i] + 4
-                && dataArr[i - 1] < 50)
+                && dataArr[i - 1] < 61)
         {
             count++;
         }
