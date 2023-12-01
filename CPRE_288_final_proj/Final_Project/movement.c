@@ -85,6 +85,7 @@ void init_pos(){
     cyBotPos.posX = 275;
     cyBotPos.posY =  275;
     cyBotPos.direction =0;
+
 }
 
 void send_pos(char bump){
