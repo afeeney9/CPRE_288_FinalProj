@@ -8,7 +8,17 @@ import math
 import time # Time library   
 # Socket library:  https://realpython.com/python-sockets/  
 # See: Background, Socket API Overview, and TCP Sockets  
-import socket   
+import socket    
+
+import os  
+import numpy as np
+import matplotlib.pyplot as plt
+
+absolute_path = os.path.dirname(__file__) # Absoult path to this python script
+relative_path = "./"   # Path to sensor data file relative to this python script (./ means data file is in the same directory as this python script)
+full_path = os.path.join(absolute_path, relative_path) # Full path to sensor data file
+filename = 'sensor-scan.txt' # Name of file you want to store sensor data from your sensor scan command
+
 
 #global vars x,y track cybots current pos and dir tracks direction cybot is currently facing 
 #objId is equal to number of objects 
@@ -399,6 +409,7 @@ def handle_scan(event):
     send_message = "m"
     cybot.write(send_message.encode()) # Convert String to bytes (i.e., encode), and send data to the server
     i = 0
+    file_object = open(full_path + filename,'w')
     while(i < 93):
         if(i == 92):
             index = cybot.readline().decode()
@@ -435,6 +446,7 @@ def handle_scan(event):
                 print("x = " + str(pos_x) + "y = " + str(pos_y))
                 # is_new = True
                 # for obj in obj_list:1
+
                 #     if(pos_x < int(obj.posX)+10 & pos_x > int(obj.posX) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
                 #         is_new = False
                 #         break
@@ -451,6 +463,7 @@ def handle_scan(event):
                 #     obj_ID +=1
                #width varies depending on bot
                 if( width < 7):
+
                     obj_type = "rock"
                     determind_box(pos_x, pos_y, 'grey')
                 else:
@@ -463,9 +476,51 @@ def handle_scan(event):
                 
         else:
             rx_message = cybot.readline()
+            if(i>0):
+                file_object.write(rx_message.decode())
+            print(i)
             print(rx_message.decode().strip('/n'))
         i += 1
     time.sleep(2) # Sleep for 2 seconds
+    file_object.close()
+
+    angle_degrees = [] # Initially empty
+    angle_radians = [] # Initially empty
+    distance = []      # Initially empty
+    # Open file containing CyBot sensor scan from 0 - 180 degrees
+    print("-----------------")
+    file_object = open(full_path + filename,'r') # Open the file: file_object is just a variable for the file "handler" returned by open()
+    #file_header = file_object.readline() # Read and store the header row (i.e., 1st row) of the file into file_headerm
+    file_data = file_object.readlines()  # Read the rest of the lines of the file into file_data
+    file_object.close() # Important to close file one you are done with it!!
+    # For each line of the file split into columns, and assign each column to a variable
+    for line in file_data: 
+            if not line.isspace():
+                data = line.split()    # Split line into columns (by default delineates columns by whitespace)                       
+                angle_degrees.append(float(data[0]))  # Column 0 holds the angle at which distance was measured
+                distance.append(float(data[1]))       # Column 1 holds the distance that was measured at a given angle       
+    # Convert python sequence (list of strings) into a numpy array
+    angle_degrees = np.array(angle_degrees) # Avoid "TypeError: can't multiply sequence by non-int of type float"
+                                            # Link for more info: https://www.freecodecamp.org/news/typeerror-cant-multiply-sequence-by-non-int-of-type-float-solved-python-error/                                      
+    angle_radians = (np.pi/180) * angle_degrees # Convert degrees into radians
+    # Create a polar plot
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}) # One subplot of type polar
+    ax.plot(angle_radians, distance, color='r', linewidth=4.0)  # Plot distance verse angle (in radians), using red, line width 4.0
+    ax.set_xlabel('Distance (m)', fontsize = 14.0)  # Label x axis
+    ax.set_ylabel('Angle (degrees)', fontsize = 14.0) # Label y axis
+    ax.xaxis.set_label_coords(0.5, 0.15) # Modify location of x axis label (Typically do not need or want this)
+    ax.tick_params(axis='both', which='major', labelsize=14) # set font size of tick labels
+    ax.set_rmax(250)                    # Saturate distance at 2.5 meters
+    ax.set_rticks([50, 100, 150, 200, 250])   # Set plot "distance" tick marks at .5, 1, 1.5, 2, and 2.5 meters
+    ax.set_rlabel_position(-22.5)     # Adjust location of the radial labels
+    ax.set_thetamax(180)              # Saturate angle to 180 degrees
+    ax.set_xticks(np.arange(0,np.pi+.1,np.pi/4)) # Set plot "angle" tick marks to pi/4 radians (i.e., displayed at 45 degree) increments
+                                            # Note: added .1 to pi to go just beyond pi (i.e., 180 degrees) so that 180 degrees is displayed
+    ax.grid(True)                     # Show grid lines
+    # Create title for plot (font size = 14pt, y & pad controls title vertical location)
+    ax.set_title("Polar Plot of CyBot Sensor Scan from 0 to 180 Degrees", size=14, y=1.0, pad=-24) 
+    plt.show()
+
     cybot.close()         # Close file object associated with the socket or UART
     cybot_socket.close()  # Close the socket (NOTE: comment out if using UART interface, only use for network socket option)
 
