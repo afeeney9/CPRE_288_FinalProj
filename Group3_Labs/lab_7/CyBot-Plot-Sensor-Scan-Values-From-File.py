@@ -45,8 +45,9 @@ file_object.close() # Important to close file one you are done with it!!
 # For each line of the file split into columns, and assign each column to a variable
 for line in file_data: 
     data = line.split()    # Split line into columns (by default delineates columns by whitespace)
-    angle_degrees.append(float(data[0]))  # Column 0 holds the angle at which distance was measured
-    distance.append(float(data[1]))       # Column 1 holds the distance that was measured at a given angle       
+    if len(data) > 0:
+        angle_degrees.append(float(data[0]))  # Column 0 holds the angle at which distance was measured
+        distance.append(float(data[1]))       # Column 1 holds the distance that was measured at a given angle       
 
 # Convert python sequence (list of strings) into a numpy array
 angle_degrees = np.array(angle_degrees) # Avoid "TypeError: can't multiply sequence by non-int of type float"
@@ -61,8 +62,8 @@ ax.set_xlabel('Distance (m)', fontsize = 14.0)  # Label x axis
 ax.set_ylabel('Angle (degrees)', fontsize = 14.0) # Label y axis
 ax.xaxis.set_label_coords(0.5, 0.15) # Modify location of x axis label (Typically do not need or want this)
 ax.tick_params(axis='both', which='major', labelsize=14) # set font size of tick labels
-ax.set_rmax(2.5)                    # Saturate distance at 2.5 meters
-ax.set_rticks([0.5, 1, 1.5, 2, 2.5])   # Set plot "distance" tick marks at .5, 1, 1.5, 2, and 2.5 meters
+ax.set_rmax(100)                    # Saturate distance at 2.5 meters
+ax.set_rticks([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])   # Set plot "distance" tick marks at .5, 1, 1.5, 2, and 2.5 meters
 ax.set_rlabel_position(-22.5)     # Adjust location of the radial labels
 ax.set_thetamax(180)              # Saturate angle to 180 degrees
 ax.set_xticks(np.arange(0,np.pi+.1,np.pi/4)) # Set plot "angle" tick marks to pi/4 radians (i.e., displayed at 45 degree) increments

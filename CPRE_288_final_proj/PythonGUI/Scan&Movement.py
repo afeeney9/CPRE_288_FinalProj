@@ -275,13 +275,8 @@ def update_pos(cybot):
         obj_list['OBJ'+ str(obj_ID)] = {'posX': x, 'posY': y, 'type': "hole"}
         obj_ID += 1
         angle = int(dir)
-<<<<<<< HEAD
         pos_x = int(math.cos(math.radians(angle)) * 150) + x
         pos_y = int(math.sin(math.radians(angle)) * 150) + y
-=======
-        pos_x = int(math.cos(math.radians(angle)) * 15) + x
-        pos_y = int(math.sin(math.radians(angle)) * 15) + y
->>>>>>> 7586183f2ef08c7cfb72c035405eb82341fedb84
         determind_box(pos_x, pos_y, 'black')
         add_object("\nOBJ" + str(obj_ID) + " at position x:" + str(pos_x) + " , y:" + str(pos_y) + " object is a hole" )
     cybot_pos.config(text = "Cybot is at: " + str(x) + ", " + str(y) + " direction: " + str(dir))
@@ -432,7 +427,6 @@ def handle_scan(event):
                 print("distance " + str(distance))
                 print(angle)
                 print(dir)
-<<<<<<< HEAD
                 angle = angle + int(dir) - 90 -14
                 print(angle)
                 print("x = " + str(x) + "y = " + str(y))
@@ -441,16 +435,6 @@ def handle_scan(event):
                 print("x = " + str(pos_x) + "y = " + str(pos_y))
                 # is_new = True
                 # for obj in obj_list:1
-=======
-                angle = angle + int(dir) - 90
-                print(angle)
-                print("x = " + str(x) + "y = " + str(y))
-                pos_x = int(math.cos(math.radians(angle)) * distance) + x
-                pos_y = int(math.sin(math.radians(angle)) * distance) + y
-                print("x = " + str(pos_x) + "y = " + str(pos_y))
-                is_new = True
-                # for obj in obj_list:
->>>>>>> 7586183f2ef08c7cfb72c035405eb82341fedb84
                 #     if(pos_x < int(obj.posX)+10 & pos_x > int(obj.posX) -10 & pos_y < (int(obj.posY) +10) & pos_y > (int(obj.posY)-10)):
                 #         is_new = False
                 #         break
@@ -465,11 +449,8 @@ def handle_scan(event):
                 #     obj_list['OBJ' + str(obj_ID)] = {'posX': pos_x, 'posY': pos_y, 'type': obj_type}
                 #     add_object("\nOBJ" + str(obj_ID) + " at position x:" + str(pos_x) + " , y:" + str(pos_y) + " object is a " + obj_type )
                 #     obj_ID +=1
-<<<<<<< HEAD
+               #width varies depending on bot
                 if( width < 7):
-=======
-                if( width <= 6):
->>>>>>> 7586183f2ef08c7cfb72c035405eb82341fedb84
                     obj_type = "rock"
                     determind_box(pos_x, pos_y, 'grey')
                 else:
